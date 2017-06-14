@@ -85,6 +85,7 @@ def buildCNNModel():
 
 def buildLSTMModel():
     model = models.Sequential()
+    model.add(LSTM(100, batch_input_shape=(1, 1, 1), return_sequences=True, stateful=True))
     model.add(LSTM(100, batch_input_shape=(1, 1, 1), return_sequences=False, stateful=True))
     model.add(Dense(1))
     model.compile(loss='mse', optimizer=adam(lr=0.0001))
