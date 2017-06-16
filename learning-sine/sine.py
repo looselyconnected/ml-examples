@@ -18,8 +18,25 @@ from keras.layers.convolutional import Conv1D
 from keras.callbacks import TensorBoard
 from keras.optimizers import adam
 from keras.layers.advanced_activations import LeakyReLU
+from shutil import copyfile
 
 INPUT_COUNT = 40
+
+def loadModel(model):
+    try:
+        model.load_weights("model.h5")
+        print("model loaded")
+    except OSError:
+        print("can't find model file to load")
+
+def saveModel(model):
+    print("Saving model")
+    try:
+        copyfile('model.h5', 'model.h5.saved')
+    except FileNotFoundError:
+        print("didn't find model files to save")
+
+    model.save_weights("model.h5", overwrite=True)
 
 # generate a sequence of data, using x = sin(a*i). Passing in a and count
 def getSineData(a, count):
@@ -86,7 +103,7 @@ def buildCNNModel():
 def buildLSTMModel():
     model = models.Sequential()
     model.add(LSTM(100, batch_input_shape=(1, 1, 1), return_sequences=True, stateful=True))
-    model.add(LSTM(100, batch_input_shape=(1, 1, 1), return_sequences=False, stateful=True))
+    model.add(LSTM(100, return_sequences=False, stateful=True))
     model.add(Dense(1))
     model.compile(loss='mse', optimizer=adam(lr=0.0001))
 
@@ -140,6 +157,8 @@ def testLSTM():
     total = 3300
     trainSize = 3000
 
+    loadModel(model)
+
     for epoch in range(0, 10):
         for i in range(0, 10):
             data = getSineData(0.06 + i * 0.006, total)
@@ -150,6 +169,8 @@ def testLSTM():
             model.fit(x=x, y=y, validation_data=(evalX, evalY), batch_size=1, epochs=1, shuffle=False)
             model.reset_states()
     
+    saveModel(model)
+
     plotGeneratedLSTM(model, 0.06)
     plotGeneratedLSTM(model, 0.083)
     plotGeneratedLSTM(model, 0.163)
